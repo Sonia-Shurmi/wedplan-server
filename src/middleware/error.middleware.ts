@@ -68,6 +68,16 @@ export const errorHandler: ErrorRequestHandler = (
     return sendError(res, 400, "Request body contains invalid JSON.")
   }
 
+  // body-parser rejects oversized payloads with a typed error.
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "type" in error &&
+    (error as { type?: unknown }).type === "entity.too.large"
+  ) {
+    return sendError(res, 413, "Request body is too large.")
+  }
+
   console.error(
     `Unhandled error on ${req.method} ${req.originalUrl}:`,
     error,

@@ -8,11 +8,19 @@ import {
 } from "./middleware/error.middleware.js"
 import authRouter from "./modules/auth/auth.route.js"
 import categoryRouter from "./modules/categories/category.route.js"
+import { UPLOAD_BODY_LIMIT } from "./modules/uploads/upload.validation.js"
+import uploadRouter from "./modules/uploads/upload.route.js"
 import serviceRouter from "./routes/service.route.js"
 
 const app = express()
 
 app.disable("x-powered-by")
+
+// Behind a hosting proxy (Vercel, Render) the client IP only reaches us
+// through X-Forwarded-For, which the rate limiter needs for public uploads.
+if (env.isProduction) {
+  app.set("trust proxy", 1)
+}
 
 // CORS must be mounted before the routes it applies to.
 app.use(
@@ -23,6 +31,14 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
     maxAge: 86_400,
   }),
+)
+
+// Upload routes accept a larger JSON body, so they get their own parser
+// before the default 1 MB parser runs.
+app.use(
+  "/api/uploads",
+  express.json({ limit: UPLOAD_BODY_LIMIT }),
+  uploadRouter,
 )
 
 app.use(express.json({ limit: "1mb" }))
