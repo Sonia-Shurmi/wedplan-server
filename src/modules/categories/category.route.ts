@@ -1,0 +1,10 @@
+
+import { Router } from "express"
+
+import { categoryController } from "./category.controller.js"
+
+const router = Router()
+
+router.get("/", categoryController.getActiveCategories)
+
+export default router
