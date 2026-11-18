@@ -1,51 +1,34 @@
+import app from "./app.js"
+import { closeDB, connectDB } from "./config/db.js"
+import { env } from "./config/env.js"
 
-import express from "express"
-import cors from "cors"
-import "dotenv/config"
-import categoryRouter from "./modules/categories/category.route.js"
-import serviceRouter from "./routes/service.route.js"
-
-import { connectDB } from "./config/db.js"
-
-const app = express()
-
-// API routes
-// API routes
-app.use("/api/categories", categoryRouter)
-app.use("/api/services", serviceRouter)
-
-const PORT = Number(process.env.PORT) || 5000
-
-// Middleware
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    credentials: true,
-  }),
-)
-
-app.use(express.json())
-
-// Health check route
-app.get("/api/health", (_req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "WedPlan API is running successfully!",
-  })
-})
-
-// Start server after database connection
 const startServer = async () => {
   try {
     await connectDB()
 
-    app.listen(PORT, () => {
-      console.log(`WedPlan server is running on port ${PORT}`)
+    const server = app.listen(env.port, () => {
+      console.log(`WedPlan server is running on port ${env.port}`)
+      console.log(`Client origin allowed by CORS: ${env.clientUrl}`)
     })
+
+    const shutdown = (signal: string) => {
+      console.log(`${signal} received. Shutting down gracefully...`)
+
+      server.close(async () => {
+        await closeDB()
+        process.exit(0)
+      })
+
+      // Do not hang forever if a request refuses to finish.
+      setTimeout(() => process.exit(1), 10_000).unref()
+    }
+
+    process.on("SIGINT", () => shutdown("SIGINT"))
+    process.on("SIGTERM", () => shutdown("SIGTERM"))
   } catch (error) {
     console.error("Failed to start WedPlan server:", error)
     process.exit(1)
   }
 }
 
-startServer()
+void startServer()
