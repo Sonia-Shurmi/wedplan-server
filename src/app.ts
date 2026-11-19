@@ -21,6 +21,7 @@ import {
 } from "./modules/dashboard/dashboard.route.js"
 import profileRouter from "./modules/profile/profile.route.js"
 import serviceRouter from "./modules/services/service.route.js"
+import subscriptionRouter from "./modules/subscriptions/subscription.route.js"
 import { UPLOAD_BODY_LIMIT } from "./modules/uploads/upload.validation.js"
 import uploadRouter from "./modules/uploads/upload.route.js"
 
@@ -75,6 +76,7 @@ app.use("/api/dashboard", dashboardRouter)
 app.use("/api/vendor/bookings", vendorBookingRouter)
 app.use("/api/services", serviceRouter)
 app.use("/api/bookings", bookingRouter)
+app.use("/api/subscriptions", subscriptionRouter)
 
 app.use(notFoundHandler)
 app.use(errorHandler)
