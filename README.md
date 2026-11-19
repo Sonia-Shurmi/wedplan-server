@@ -192,6 +192,20 @@ The admin password is intentionally **not** part of `seed:demo`: pass it to
 evaluation password; choose a different strong password for any non-demo
 deployment.
 
+### Service photos
+
+Service galleries read from the sibling client folder
+`../wedplan-client/public/images` (override with `CLIENT_IMAGES_DIR`). Files are
+served by the client as `/images/<filename>`. `wedding.jpg` stays the hero and
+fallback; every other image is distributed across the seeded services.
+
+```bash
+npm run seed:images
+```
+
+This updates only empty or placeholder galleries, so vendor-uploaded ImgBB URLs
+are preserved. Redeploy the client after adding new image files.
+
 ### Health check
 
 ```http
@@ -216,6 +230,7 @@ GET /api/health
 | `CLIENT_URL`            |    ✅    | Exact client origin allowed by CORS, e.g. `http://localhost:3000`.          |
 | `MONGODB_URI`           |    ✅    | MongoDB Atlas connection string.                                            |
 | `DATABASE_NAME`         |    ✅    | Database name. Must match the client app.                                   |
+| `CLIENT_IMAGES_DIR`     |    —     | Optional override for the client `public/images` folder used by `seed:images`. |
 | `BETTER_AUTH_URL`       |    ✅    | Base URL of the Next.js app that issues JWTs (issuer + audience).           |
 | `BETTER_AUTH_JWKS_URL`  |    —     | Optional override; defaults to `${BETTER_AUTH_URL}/api/auth/jwks`.          |
 | `STRIPE_SECRET_KEY`     |    ✅    | Stripe test secret key (`sk_test_...`).                                     |
@@ -441,6 +456,7 @@ Business data lives in four collections; Better Auth manages its own.
 | `npm run typecheck`       | Type check only                                 |
 | `npm run seed:categories` | Seed six categories                             |
 | `npm run seed:services`   | Seed 8 demo listings (6 public, 1 pending, 1 rejected) |
+| `npm run seed:images`     | Assign `public/images` photos to placeholder galleries |
 | `npm run seed:demo`       | Seed three role accounts + two sample bookings  |
 | `npm run seed:admin`      | Create or promote an admin; password passed as an argument and hashed by Better Auth |
 | `npm run migrate:services`| Backfill legacy service categories              |

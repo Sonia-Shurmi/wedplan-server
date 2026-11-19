@@ -4,6 +4,11 @@ import { closeDB, connectDB } from "../config/db.js"
 import { CATEGORIES } from "../modules/categories/category.constants.js"
 import type { ServiceRecord } from "../modules/services/service.interface.js"
 import { DEMO_ACCOUNTS, DEMO_IDS } from "./demo.constants.js"
+import {
+  assignServiceImages,
+  FALLBACK_SERVICE_IMAGE,
+  getServiceImagesDir,
+} from "./service-images.js"
 
 interface SeedService {
   serviceName: string
@@ -118,6 +123,9 @@ const seedServices = async () => {
     const collection = db.collection<ServiceRecord>("services")
     const users = db.collection("users")
     const now = new Date()
+    const serviceImages = assignServiceImages(samples.map((s) => s.serviceName))
+
+    console.log(`Using service images from ${getServiceImagesDir()}`)
 
     const ownerIds: Record<SeedService["owner"], string> = {
       premiumVendor: DEMO_IDS.premiumVendor,
@@ -148,7 +156,7 @@ const seedServices = async () => {
             price: sample.price,
             currency: "USD",
             location: sample.location,
-            images: ["/images/wedding.jpg"],
+            images: serviceImages[sample.serviceName] ?? [FALLBACK_SERVICE_IMAGE],
             status: sample.status,
             isActive: sample.isActive,
             rejectionReason: sample.rejectionReason ?? null,
