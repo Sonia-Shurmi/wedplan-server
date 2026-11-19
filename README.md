@@ -136,9 +136,11 @@ wedplan-server/
 │   │   ├── subscriptions/       # Stripe checkout + webhook
 │   │   └── stats/
 │   ├── scripts/
+│   │   ├── demo.constants.ts       # reproducible demo ids + accounts
+│   │   ├── seed-admin.ts           # explicit admin creation (no baked password)
 │   │   ├── seed-categories.ts
-│   │   ├── seed-services.ts
-│   │   └── seed-admin.ts
+│   │   ├── seed-demo-users.ts      # role dashboards + sample bookings
+│   │   └── seed-services.ts
 │   └── utils/
 ├── vercel.json
 ├── tsconfig.json
@@ -157,10 +159,11 @@ npm install
 cp .env.example .env
 #    fill in MongoDB, Stripe, ImgBB and Better Auth URLs
 
-# 3. seed
+# 3. seed (all commands are safe to re-run)
 npm run seed:categories
 npm run seed:services
-npm run seed:admin -- admin@wedplan.dev 'AdminPass1'
+npm run seed:demo
+npm run seed:admin -- admin@wedplan.dev 'ChooseYourOwnPassword1'
 
 # 4. run
 npm run dev
@@ -168,6 +171,23 @@ npm run dev
 ```
 
 The Next.js client must be running separately on `http://localhost:3000`.
+
+### Demo data
+
+`npm run seed:demo` creates reproducible accounts for each role plus two sample
+bookings, and `npm run seed:services` creates six public listings plus one
+pending and one rejected listing so the admin queue has something to review.
+Run these **only against a development database** — the demo password is public.
+
+| Role           | Email                 | Password    | What it shows                                  |
+| -------------- | --------------------- | ----------- | ---------------------------------------------- |
+| Admin          | `admin@wedplan.dev`   | chosen in `seed:admin` | Users, moderation queue, transactions  |
+| Premium vendor | `studio@wedplan.dev`  | `Demo1234`  | Premium badge, 3 listings, accepted booking    |
+| Free vendor    | `flora@wedplan.dev`   | `Demo1234`  | Free plan, pending booking request              |
+| Customer       | `couple@wedplan.dev`  | `Demo1234`  | One accepted and one pending booking           |
+
+The admin password is intentionally **not** part of the demo seed: pass it to
+`seed:admin` yourself and never commit it.
 
 ### Health check
 
@@ -417,8 +437,10 @@ Business data lives in four collections; Better Auth manages its own.
 | `npm run start`           | Run compiled server                             |
 | `npm run typecheck`       | Type check only                                 |
 | `npm run seed:categories` | Seed six categories                             |
-| `npm run seed:services`   | Seed demo services                              |
-| `npm run seed:admin`      | Create or promote an admin (password hashed by Better Auth) |
+| `npm run seed:services`   | Seed 8 demo listings (6 public, 1 pending, 1 rejected) |
+| `npm run seed:demo`       | Seed three role accounts + two sample bookings  |
+| `npm run seed:admin`      | Create or promote an admin; password passed as an argument and hashed by Better Auth |
+| `npm run migrate:services`| Backfill legacy service categories              |
 
 ---
 
