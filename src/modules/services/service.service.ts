@@ -139,6 +139,7 @@ const vendorPipeline = (): Document[] => [
       images: 1,
       status: 1,
       isActive: 1,
+      rejectionReason: 1,
       isPremiumVendor: 1,
       vendor: 1,
       createdAt: 1,
