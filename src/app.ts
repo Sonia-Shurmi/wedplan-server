@@ -4,6 +4,7 @@ import express from "express"
 // Registers the Express Request augmentation used across controllers.
 import "./types/express.js"
 
+import { connectDB } from "./config/db.js"
 import { env } from "./config/env.js"
 import {
   errorHandler,
@@ -38,6 +39,18 @@ app.disable("x-powered-by")
 if (env.isProduction) {
   app.set("trust proxy", 1)
 }
+
+// Vercel imports this module directly and never runs `src/server.ts`, so the
+// database cannot be connected once at process start. Connect on each request;
+// connectDB() reuses a cached client after the first successful call.
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDB()
+    next()
+  } catch (error) {
+    next(error)
+  }
+})
 
 // CORS must be mounted before the routes it applies to.
 app.use(
