@@ -6,6 +6,10 @@ import {
   errorHandler,
   notFoundHandler,
 } from "./middleware/error.middleware.js"
+import {
+  adminTransactionsRouter,
+  adminUsersRouter,
+} from "./modules/admin/admin.route.js"
 import adminServiceRouter from "./modules/admin/admin-service.route.js"
 import authRouter from "./modules/auth/auth.route.js"
 import bookingRouter from "./modules/bookings/booking.route.js"
@@ -63,6 +67,8 @@ app.use("/api/me", authRouter)
 app.use("/api/categories", categoryRouter)
 app.use("/api/admin/services", adminServiceRouter)
 app.use("/api/admin/stats", adminStatsRouter)
+app.use("/api/admin/transactions", adminTransactionsRouter)
+app.use("/api/admin/users", adminUsersRouter)
 app.use("/api/dashboard", dashboardRouter)
 app.use("/api/vendor/bookings", vendorBookingRouter)
 app.use("/api/services", serviceRouter)
