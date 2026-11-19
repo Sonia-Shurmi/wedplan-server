@@ -11,6 +11,10 @@ import authRouter from "./modules/auth/auth.route.js"
 import bookingRouter from "./modules/bookings/booking.route.js"
 import vendorBookingRouter from "./modules/bookings/vendor-booking.route.js"
 import categoryRouter from "./modules/categories/category.route.js"
+import {
+  adminStatsRouter,
+  dashboardRouter,
+} from "./modules/dashboard/dashboard.route.js"
 import serviceRouter from "./modules/services/service.route.js"
 import { UPLOAD_BODY_LIMIT } from "./modules/uploads/upload.validation.js"
 import uploadRouter from "./modules/uploads/upload.route.js"
@@ -58,6 +62,8 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/me", authRouter)
 app.use("/api/categories", categoryRouter)
 app.use("/api/admin/services", adminServiceRouter)
+app.use("/api/admin/stats", adminStatsRouter)
+app.use("/api/dashboard", dashboardRouter)
 app.use("/api/vendor/bookings", vendorBookingRouter)
 app.use("/api/services", serviceRouter)
 app.use("/api/bookings", bookingRouter)
