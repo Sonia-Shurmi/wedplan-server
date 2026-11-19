@@ -13,6 +13,7 @@
     "seed:categories": "tsx src/scripts/seed-categories.ts",
     "seed:services": "tsx src/scripts/seed-services.ts",
     "seed:images": "tsx src/scripts/update-service-images.ts",
+    "fix:venue-image": "tsx src/scripts/update-venue-image.ts",
     "seed:demo": "tsx src/scripts/seed-demo-users.ts",
     "migrate:services": "tsx src/scripts/migrate-service-categories.ts"
   },

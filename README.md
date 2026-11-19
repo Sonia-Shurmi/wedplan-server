@@ -206,6 +206,9 @@ npm run seed:images
 This updates only empty or placeholder galleries, so vendor-uploaded ImgBB URLs
 are preserved. Redeploy the client after adding new image files.
 
+The QA-created `Outdoor Venue` listing has its own curated venue photos. Restore
+them with `npm run fix:venue-image` if the listing is ever recreated.
+
 ### Health check
 
 ```http
@@ -457,6 +460,7 @@ Business data lives in four collections; Better Auth manages its own.
 | `npm run seed:categories` | Seed six categories                             |
 | `npm run seed:services`   | Seed 8 demo listings (6 public, 1 pending, 1 rejected) |
 | `npm run seed:images`     | Assign `public/images` photos to placeholder galleries |
+| `npm run fix:venue-image` | Restore curated local photos for `Outdoor Venue`       |
 | `npm run seed:demo`       | Seed three role accounts + two sample bookings  |
 | `npm run seed:admin`      | Create or promote an admin; password passed as an argument and hashed by Better Auth |
 | `npm run migrate:services`| Backfill legacy service categories              |
