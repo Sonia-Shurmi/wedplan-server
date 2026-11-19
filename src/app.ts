@@ -22,6 +22,7 @@ import {
 import profileRouter from "./modules/profile/profile.route.js"
 import serviceRouter from "./modules/services/service.route.js"
 import subscriptionRouter from "./modules/subscriptions/subscription.route.js"
+import stripeWebhookRouter from "./modules/subscriptions/webhook.route.js"
 import { UPLOAD_BODY_LIMIT } from "./modules/uploads/upload.validation.js"
 import uploadRouter from "./modules/uploads/upload.route.js"
 
@@ -44,6 +45,14 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
     maxAge: 86_400,
   }),
+)
+
+// Stripe signs the exact bytes it sends, so this endpoint must be registered
+// before any JSON body parser touches the request.
+app.use(
+  "/api/webhooks/stripe",
+  express.raw({ type: "application/json" }),
+  stripeWebhookRouter,
 )
 
 // Upload routes accept a larger JSON body, so they get their own parser
