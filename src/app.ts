@@ -19,6 +19,7 @@ import {
   adminStatsRouter,
   dashboardRouter,
 } from "./modules/dashboard/dashboard.route.js"
+import profileRouter from "./modules/profile/profile.route.js"
 import serviceRouter from "./modules/services/service.route.js"
 import { UPLOAD_BODY_LIMIT } from "./modules/uploads/upload.validation.js"
 import uploadRouter from "./modules/uploads/upload.route.js"
@@ -64,6 +65,7 @@ app.get("/api/health", (_req, res) => {
 })
 
 app.use("/api/me", authRouter)
+app.use("/api/profile", profileRouter)
 app.use("/api/categories", categoryRouter)
 app.use("/api/admin/services", adminServiceRouter)
 app.use("/api/admin/stats", adminStatsRouter)
