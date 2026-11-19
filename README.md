@@ -5,8 +5,9 @@ Express.js 5 + TypeScript + MongoDB API for [WedPlan](https://github.com/Sonia-S
 The API owns all business data — services, bookings, transactions, users and platform statistics — and enforces authentication, role authorization and resource ownership on every protected route.
 
 > **Client Repository:** https://github.com/Sonia-Shurmi/wedplan-client
-> **Live API:** _Add the deployed server URL here after deployment._
-> **Client live site:** _Add the deployed client URL here after deployment._
+> **Server Repository:** https://github.com/Sonia-Shurmi/wedplan-server
+> **Live API:** https://wedplan-server-gamma.vercel.app
+> **Client live site:** https://wedplan-client-tau.vercel.app
 
 ---
 
@@ -105,7 +106,7 @@ Better Auth runs in the Next.js client so the session cookie stays first-party. 
 | Payments      | Stripe Checkout + Webhooks                                    |
 | Image Hosting | ImgBB API                                                     |
 | Validation    | Zod                                                           |
-| Deployment    | Vercel serverless function (`api/index.ts`)                    |
+| Deployment    | Vercel serverless function (default export from `src/app.ts`)  |
 
 ---
 
@@ -113,11 +114,10 @@ Better Auth runs in the Next.js client so the session cookie stays first-party. 
 
 ```
 wedplan-server/
-├── api/
-│   └── index.ts                 # Vercel serverless entry (exports the app)
 ├── src/
-│   ├── app.ts                   # Express app, middleware, routers
+│   ├── app.ts                   # Express app + Vercel serverless default export
 │   ├── server.ts                # Local listener + graceful shutdown
+│   ├── types/express.ts         # Request augmentation used by the Vercel build
 │   ├── config/
 │   │   ├── db.ts                # cached MongoClient + getDB()
 │   │   └── env.ts               # validated environment access
@@ -163,7 +163,7 @@ cp .env.example .env
 npm run seed:categories
 npm run seed:services
 npm run seed:demo
-npm run seed:admin -- admin@wedplan.dev 'ChooseYourOwnPassword1'
+npm run seed:admin -- admin@wedplan.dev Demo1234
 
 # 4. run
 npm run dev
@@ -172,22 +172,25 @@ npm run dev
 
 The Next.js client must be running separately on `http://localhost:3000`.
 
-### Demo data
+### Demo / evaluation accounts
 
 `npm run seed:demo` creates reproducible accounts for each role plus two sample
 bookings, and `npm run seed:services` creates six public listings plus one
 pending and one rejected listing so the admin queue has something to review.
-Run these **only against a development database** — the demo password is public.
+The same accounts are available on the live deployment. Run the seeds **only
+against a development database** — the demo password is public.
 
-| Role           | Email                 | Password    | What it shows                                  |
-| -------------- | --------------------- | ----------- | ---------------------------------------------- |
-| Admin          | `admin@wedplan.dev`   | chosen in `seed:admin` | Users, moderation queue, transactions  |
-| Premium vendor | `studio@wedplan.dev`  | `Demo1234`  | Premium badge, 3 listings, accepted booking    |
-| Free vendor    | `flora@wedplan.dev`   | `Demo1234`  | Free plan, pending booking request              |
-| Customer       | `couple@wedplan.dev`  | `Demo1234`  | One accepted and one pending booking           |
+| Role           | Email                 | Password   | What it shows                                  |
+| -------------- | --------------------- | ---------- | ---------------------------------------------- |
+| Admin          | `admin@wedplan.dev`   | `Demo1234` | Users, moderation queue, transactions          |
+| Premium vendor | `studio@wedplan.dev`  | `Demo1234` | Premium badge, 3 listings, accepted booking    |
+| Free vendor    | `flora@wedplan.dev`   | `Demo1234` | Free plan, pending booking request             |
+| Customer       | `couple@wedplan.dev`  | `Demo1234` | One accepted and one pending booking           |
 
-The admin password is intentionally **not** part of the demo seed: pass it to
-`seed:admin` yourself and never commit it.
+The admin password is intentionally **not** part of `seed:demo`: pass it to
+`seed:admin` yourself and never commit it. `Demo1234` is the published
+evaluation password; choose a different strong password for any non-demo
+deployment.
 
 ### Health check
 
@@ -446,20 +449,20 @@ Business data lives in four collections; Better Auth manages its own.
 
 ## Deployment (Vercel)
 
-1. Import the repository into Vercel.
-2. Framework preset: **Express** (auto-detected from `src/app.ts`, which default-exports the configured app). `vercel.json` pins the build command to `npm run build`.
-3. Add every environment variable from `.env.example` to **Production** (and Preview if you use it). Set `CLIENT_URL` to the client origin and `BETTER_AUTH_URL` to the same origin the Next.js app uses for its JWT issuer/JWKS.
-4. Deploy, then point the Stripe webhook at:
-   `https://<server>.vercel.app/api/webhooks/stripe`
-   with events `checkout.session.completed`, `invoice.paid` and `customer.subscription.deleted`.
-5. Verify:
-   - `GET /api/health` returns 200,
-   - a signed-in request with a valid JWT returns data,
-   - a request with a tampered token returns 401,
-   - a customer calling an admin route returns 403,
-   - `POST /api/webhooks/stripe` with a bad signature returns 400 and writes nothing.
+1. Import the repository into Vercel as `wedplan-server` → https://wedplan-server-gamma.vercel.app.
+2. Framework preset: **Express** (auto-detected from `src/app.ts`, which default-exports the configured app). `vercel.json` contains only `$schema` and `buildCommand: npm run build`.
+3. Add every environment variable from `.env.example` to **Production** (and Preview if you use it). `CLIENT_URL` and `BETTER_AUTH_URL` are both https://wedplan-client-tau.vercel.app so CORS, JWT issuer/audience and JWKS discovery line up.
+4. The Stripe webhook endpoint is:
+   `https://wedplan-server-gamma.vercel.app/api/webhooks/stripe`
+   with events `checkout.session.completed`, `invoice.paid` and `customer.subscription.deleted`. Its signing secret is stored only as `STRIPE_WEBHOOK_SECRET`.
+5. Verified on the live deployment:
+   - `GET /api/health` → 200, `/api/services/featured` → 6 services, `/api/categories` → 6 categories, `/api/auth/jwks` → 2 keys
+   - admin, vendor and customer sign-in → 200; role dashboards → 200
+   - customer calling `/api/admin/stats` → 403
+   - `POST /api/webhooks/stripe` with a bad signature → 400 and no writes
+   - CORS `Access-Control-Allow-Origin` → the live client origin
 
-MongoDB connections are cached at module scope so warm invocations reuse the pool. Stripe signs the exact request bytes, so the webhook route is registered with `express.raw()` before `express.json()`.
+MongoDB connections are cached at module scope so warm invocations reuse the pool, and `connectDB()` runs on every request so a closed serverless topology is reopened before a handler runs. Stripe signs the exact request bytes, so the webhook route is registered with `express.raw()` before `express.json()`.
 
 > **Why there is no `api/index.ts`:** current Vercel Express support detects `src/app.ts` automatically. Adding a second entry would create two functions for the same app, so the single default export is the serverless entry.
 
@@ -478,6 +481,7 @@ MongoDB connections are cached at module scope so warm invocations reuse the poo
 - [x] Idempotent transaction creation
 - [x] No client-supplied amount, role or vendor id trusted
 - [x] `.env` ignored in git
+- [x] Live deployment URLs, CORS, JWKS and webhook verified end-to-end
 
 ---
 
