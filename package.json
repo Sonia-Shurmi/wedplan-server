@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "seed:categories": "tsx src/scripts/seed-categories.ts",
-    "seed:services": "tsx src/scripts/seed-services.ts"
+    "seed:services": "tsx src/scripts/seed-services.ts",
+    "migrate:services": "tsx src/scripts/migrate-service-categories.ts"
   },
   "keywords": [],
   "author": "",
