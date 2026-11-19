@@ -1,12 +1,14 @@
 import app from "./app.js"
 import { closeDB, connectDB } from "./config/db.js"
 import { env } from "./config/env.js"
+import { bookingService } from "./modules/bookings/booking.service.js"
 import { serviceService } from "./modules/services/service.service.js"
 
 const startServer = async () => {
   try {
     await connectDB()
     await serviceService.ensureIndexes()
+    await bookingService.ensureIndexes()
 
     const server = app.listen(env.port, () => {
       console.log(`WedPlan server is running on port ${env.port}`)
