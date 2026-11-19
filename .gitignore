@@ -10,6 +10,9 @@ dist/
 .env.*
 !.env.example
 
+# Vercel project link (local only)
+.vercel
+
 # Logs
 logs/
 *.log
@@ -22,3 +25,4 @@ Thumbs.db
 # Editor
 .vscode/
 
+.env*

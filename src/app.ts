@@ -1,6 +1,9 @@
 import cors from "cors"
 import express from "express"
 
+// Registers the Express Request augmentation used across controllers.
+import "./types/express.js"
+
 import { env } from "./config/env.js"
 import {
   errorHandler,

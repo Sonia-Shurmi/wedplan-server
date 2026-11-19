@@ -447,18 +447,21 @@ Business data lives in four collections; Better Auth manages its own.
 ## Deployment (Vercel)
 
 1. Import the repository into Vercel.
-2. Framework preset: **Other**; build command `npm run build`.
-3. `api/index.ts` exports the Express app; `vercel.json` rewrites every request to it.
-4. Add all environment variables (Production + Preview).
-5. Deploy, then set the Stripe webhook URL to:
+2. Framework preset: **Express** (auto-detected from `src/app.ts`, which default-exports the configured app). `vercel.json` pins the build command to `npm run build`.
+3. Add every environment variable from `.env.example` to **Production** (and Preview if you use it). Set `CLIENT_URL` to the client origin and `BETTER_AUTH_URL` to the same origin the Next.js app uses for its JWT issuer/JWKS.
+4. Deploy, then point the Stripe webhook at:
    `https://<server>.vercel.app/api/webhooks/stripe`
-6. Verify:
+   with events `checkout.session.completed`, `invoice.paid` and `customer.subscription.deleted`.
+5. Verify:
    - `GET /api/health` returns 200,
    - a signed-in request with a valid JWT returns data,
    - a request with a tampered token returns 401,
-   - a customer calling an admin route returns 403.
+   - a customer calling an admin route returns 403,
+   - `POST /api/webhooks/stripe` with a bad signature returns 400 and writes nothing.
 
-MongoDB connections are cached at module scope so warm invocations reuse the pool.
+MongoDB connections are cached at module scope so warm invocations reuse the pool. Stripe signs the exact request bytes, so the webhook route is registered with `express.raw()` before `express.json()`.
+
+> **Why there is no `api/index.ts`:** current Vercel Express support detects `src/app.ts` automatically. Adding a second entry would create two functions for the same app, so the single default export is the serverless entry.
 
 ---
 
