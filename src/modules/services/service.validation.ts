@@ -92,6 +92,11 @@ export const adminUpdateServiceSchema = z
   .object({
     status: z.enum(["pending", "approved", "rejected"]).optional(),
     isActive: z.boolean().optional(),
+    rejectionReason: z
+      .string()
+      .trim()
+      .max(300, "The reason must be 300 characters or fewer.")
+      .optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: "Provide at least one field to update.",

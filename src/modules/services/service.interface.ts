@@ -15,6 +15,8 @@ export interface ServiceRecord {
   images: string[]
   status: ServiceStatus
   isActive: boolean
+  /** Optional feedback recorded when an admin rejects a listing. */
+  rejectionReason?: string | null
   createdAt: Date
   updatedAt: Date
 }

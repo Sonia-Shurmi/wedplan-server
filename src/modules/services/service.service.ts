@@ -417,6 +417,15 @@ const adminUpdate = async (
   if (input.status !== undefined) set.status = input.status
   if (input.isActive !== undefined) set.isActive = input.isActive
 
+  if (input.rejectionReason !== undefined) {
+    set.rejectionReason =
+      input.status === "rejected" && input.rejectionReason
+        ? input.rejectionReason
+        : null
+  } else if (input.status === "approved") {
+    set.rejectionReason = null
+  }
+
   await collection().updateOne({ _id: existing._id }, { $set: set })
 
   return getService(id, { includeUnpublished: true })
